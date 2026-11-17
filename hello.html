@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hello</title>
+    <style>
+        .start-time {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="greeting" hidden>
+        <div class="start-time">Start time: <time id="started-at"></time></div>
+        <h1>Hello, <span id="user-name"></span>!</h1>
+        <button id="logout" type="button">Log out</button>
+    </div>
+
+    <main id="name-entry">
+        <h1>Enter your name</h1>
+        <form id="name-form">
+            <label for="name">Name:</label>
+            <input id="name" name="name" type="text" required>
+            <button type="submit">Submit</button>
+        </form>
+    </main>
+
+    <script>
+        const nameKey = 'helloAppName';
+        const startedAtKey = 'helloAppStartedAt';
+        const greeting = document.querySelector('#greeting');
+        const nameEntry = document.querySelector('#name-entry');
+        const nameInput = document.querySelector('#name');
+        const userName = document.querySelector('#user-name');
+        const startedAt = document.querySelector('#started-at');
+
+        function showGreeting(name, timestamp) {
+            userName.textContent = name;
+            startedAt.textContent = new Date(timestamp).toLocaleString();
+            greeting.hidden = false;
+            nameEntry.hidden = true;
+        }
+
+        const savedName = sessionStorage.getItem(nameKey);
+        const savedStartedAtValue = sessionStorage.getItem(startedAtKey);
+        const savedStartedAt = savedStartedAtValue === null ? NaN : Number(savedStartedAtValue);
+        if (savedName && Number.isFinite(savedStartedAt)) {
+            showGreeting(savedName, savedStartedAt);
+        }
+
+        document.querySelector('#name-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const name = nameInput.value.trim();
+            if (!name) {
+                nameInput.setCustomValidity('Please enter your name.');
+                nameInput.reportValidity();
+                return;
+            }
+
+            nameInput.setCustomValidity('');
+            const timestamp = Date.now();
+            sessionStorage.setItem(nameKey, name);
+            sessionStorage.setItem(startedAtKey, String(timestamp));
+            showGreeting(name, timestamp);
+        });
+
+        nameInput.addEventListener('input', () => nameInput.setCustomValidity(''));
+
+        document.querySelector('#logout').addEventListener('click', () => {
+            sessionStorage.removeItem(nameKey);
+            sessionStorage.removeItem(startedAtKey);
+            greeting.hidden = true;
+            nameEntry.hidden = false;
+            nameInput.value = '';
+            nameInput.focus();
+        });
+    </script>
+</body>
+</html>
